@@ -1,51 +1,51 @@
-document.getElementById("dob").addEventListener("change", function () {
-    const dob = new Date(this.value);
-    const today = new Date();
-    const age = today.getFullYear() - dob.getFullYear();
-    const month = today.getMonth() - dob.getMonth();
-    
-    if (month < 0 || (month === 0 && today.getDate() < dob.getDate())) {
-        age--;
-    }
-    
-    if (age < 18 || age > 55) {
-        alert("Age must be between 18 and 55.");
-        this.value = '';  // Reset the input if the age is invalid
-    }
-});
+let Form = document.getElementById("user-form");
 
-document.getElementById("registrationForm").addEventListener("submit", function(event) {
+// fetches the records
+const retrieveEntries = () => {
+    let entries= localStorage.getItem("user-entries");
+    if(entries)
+    return (JSON.parse(entries));
+
+    return [];  
+};
+
+// display the records
+const DisplayEntries = () => {
+let entries = retrieveEntries();
+let tableContent = entries.map( (entry) => {
+    const namecell = `<td >${entry.name}</td>`;
+    const emailcell = `<td >${entry.email}</td>`;
+    const dobcell = `<td >${entry.dob}</td>`;
+    const passcell = `<td >${entry.password}</td>`;
+    const acceptedTermscell = `<td >${entry.acceptedTerms}</td>`;
+
+    // returns  row 
+    return `<tr> ${namecell} ${emailcell} ${passcell} ${dobcell} ${acceptedTermscell} </tr>`;
+}).join("\n");
+
+const table = "<table><tr><th>Name</th><th>Email</th><th>Password</th><th>dob</th><th>accepted terms?</th></tr>"+tableContent+"</table>";
+let details = document.getElementById("user-entries");
+details.innerHTML = table;
+
+};
+
+// saves user details to local storage
+let userEntries = retrieveEntries();//to get the records already in local storage 
+const saveUserForm = (event)=>{
     event.preventDefault();
+    let name = document.getElementById("name").value;
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+    let dob = document.getElementById("dob").value;
+    const acceptedTerms = document.getElementById("checkbox").checked;
 
-    // Get form data
-    const name = document.getElementById("name").value;
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const dob = document.getElementById("dob").value;
-    const acceptedTerms = document.getElementById("terms").checked;
+    const data = { name ,email, password , dob , acceptedTerms}; 
 
-    // Save data to localStorage
-    const formData = { name, email, password, dob, acceptedTerms };
-    localStorage.setItem("formData", JSON.stringify(formData));
+    userEntries.push(data);
+// storing values or entries
+    localStorage.setItem("user-entries",JSON.stringify(userEntries));
+    DisplayEntries();
+};
 
-    // Load data into the table
-    loadData();
-});
-
-function loadData() {
-    const formData = JSON.parse(localStorage.getItem("formData"));
-    if (formData) {
-        const table = document.getElementById("dataTable").querySelector("tbody");
-        table.innerHTML = `<tr>
-            <td>${formData.name}</td>
-            <td>${formData.email}</td>
-            <td>${formData.password}</td>
-            <td>${formData.dob}</td>
-            <td>${formData.acceptedTerms ? "Yes" : "No"}</td>
-        </tr>`;
-    }
-}
-
-// Load data when the page loads
-window.onload = loadData;
-
+Form.addEventListener("submit",saveUserForm);
+DisplayEntries();
